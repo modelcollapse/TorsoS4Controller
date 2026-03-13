@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct Torso_S4_ControllerApp: App {
+    @StateObject private var appState = AppState()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainView()
+                .environmentObject(appState)
+                .frame(minWidth: 1280, minHeight: 800)
         }
     }
 }

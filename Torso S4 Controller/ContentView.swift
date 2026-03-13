@@ -2,23 +2,21 @@
 //  ContentView.swift
 //  Torso S4 Controller
 //
-//  Created by Bryan Abdul Collins on 3/13/26.
+//  Deprecated - Use MainView instead
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var appState: AppState
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        MainView()
+            .environmentObject(appState)
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AppState())
 }
