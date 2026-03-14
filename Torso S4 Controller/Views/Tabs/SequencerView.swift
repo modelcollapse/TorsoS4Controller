@@ -38,8 +38,13 @@ struct SequencerView: View {
             let maxWidth = geo.size.width - 32
             VStack(spacing: 12) {
                 stepCountControl
+
                 ForEach(appState.lanes.indices, id: \.self) { laneIndex in
-                    laneView(laneIndex: laneIndex, maxWidth: maxWidth)
+                    let laneBinding = Binding(
+                        get: { appState.lanes[laneIndex] },
+                        set: { appState.lanes[laneIndex] = $0 }
+                    )
+                    laneView(lane: laneBinding, maxWidth: maxWidth)
                 }
             }
             .padding(.vertical)
@@ -52,9 +57,12 @@ struct SequencerView: View {
     private var stepCountControl: some View {
         HStack {
             Text("Steps:")
-            TextField("Number of steps", value: $appState.stepCount, formatter: NumberFormatter())
-                .frame(width: 60)
-                .textFieldStyle(.roundedBorder)
+            TextField("Number of steps", value: Binding(
+                get: { appState.stepCount },
+                set: { appState.stepCount = $0 }
+            ), formatter: NumberFormatter())
+            .frame(width: 60)
+            .textFieldStyle(.roundedBorder)
             Button("+") { appState.stepCount += 1 }
             Button("-") { appState.stepCount = max(1, appState.stepCount - 1) }
             Spacer()
@@ -62,18 +70,18 @@ struct SequencerView: View {
         .padding(.horizontal)
     }
 
-    private func laneView(laneIndex: Int, maxWidth: CGFloat) -> some View {
+    private func laneView(lane: Binding<Lane>, maxWidth: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            SequencerLaneView(lane: $appState.lanes[laneIndex], maxWidth: maxWidth)
+            SequencerLaneView(lane: lane, maxWidth: maxWidth)
             HStack(spacing: 8) {
                 Menu("Copy →") {
-                    ForEach(appState.lanes.indices.filter { $0 != laneIndex }, id: \.self) { target in
-                        Button("Lane \(target + 1)") { appState.copyLane(from: laneIndex, to: target) }
+                    ForEach(appState.lanes.indices.filter { appState.lanes[$0].id != lane.wrappedValue.id }, id: \.self) { target in
+                        Button("Lane \(target + 1)") { appState.copyLane(from: appState.lanes.firstIndex(where: { $0.id == lane.wrappedValue.id })!, to: target) }
                     }
                 }
                 Menu("Mirror →") {
-                    ForEach(appState.lanes.indices.filter { $0 != laneIndex }, id: \.self) { target in
-                        Button("Lane \(target + 1)") { appState.mirrorLane(from: laneIndex, to: target) }
+                    ForEach(appState.lanes.indices.filter { appState.lanes[$0].id != lane.wrappedValue.id }, id: \.self) { target in
+                        Button("Lane \(target + 1)") { appState.mirrorLane(from: appState.lanes.firstIndex(where: { $0.id == lane.wrappedValue.id })!, to: target) }
                     }
                 }
                 Spacer()
