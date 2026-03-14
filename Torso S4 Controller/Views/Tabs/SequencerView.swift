@@ -40,10 +40,11 @@ struct SequencerView: View {
                 stepCountControl
 
                 ForEach(appState.lanes.indices, id: \.self) { laneIndex in
-                    let laneBinding = Binding(
+                    let laneBinding = Binding<Lane>(
                         get: { appState.lanes[laneIndex] },
                         set: { appState.lanes[laneIndex] = $0 }
                     )
+                    let laneID = appState.lanes[laneIndex].id
                     laneView(lane: laneBinding, maxWidth: maxWidth)
                 }
             }
@@ -57,7 +58,7 @@ struct SequencerView: View {
     private var stepCountControl: some View {
         HStack {
             Text("Steps:")
-            TextField("Number of steps", value: Binding(
+            TextField("Number of steps", value: Binding<Int>(
                 get: { appState.stepCount },
                 set: { appState.stepCount = $0 }
             ), formatter: NumberFormatter())
