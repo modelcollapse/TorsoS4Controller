@@ -30,17 +30,18 @@ struct Lane: Identifiable {
 
 struct SequencerView: View {
     @EnvironmentObject var appState: AppState
+    @StateObject private var localState: AppState = AppState()
 
     var body: some View {
         GeometryReader { geo in
             let maxWidth = geo.size.width - 32
             VStack(spacing: 12) {
-                // Step count control with explicit binding
+                // Step count control
                 HStack {
                     Text("Steps:")
                     let stepCountBinding = Binding<Int>(
-                        get: { appState.stepCount },
-                        set: { appState.stepCount = $0 }
+                        get: { localState.stepCount },
+                        set: { localState.stepCount = $0; appState.stepCount = $0 }
                     )
                     TextField("Number of steps", value: stepCountBinding, formatter: NumberFormatter())
                         .frame(width: 60)
@@ -52,15 +53,19 @@ struct SequencerView: View {
                 .padding(.horizontal)
 
                 // Lanes
-                ForEach(appState.lanes.indices, id: \.self) { laneIndex in
+                ForEach(localState.lanes.indices, id: \.self) { laneIndex in
                     let laneBinding = Binding<Lane>(
-                        get: { appState.lanes[laneIndex] },
-                        set: { appState.lanes[laneIndex] = $0 }
+                        get: { localState.lanes[laneIndex] },
+                        set: { localState.lanes[laneIndex] = $0; appState.lanes[laneIndex] = $0 }
                     )
                     SequencerLaneView(lane: laneBinding, maxWidth: maxWidth)
                 }
             }
             .padding(.vertical)
+        }
+        .onAppear {
+            localState.lanes = appState.lanes
+            localState.stepCount = appState.stepCount
         }
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { _ in
             appState.transportTick()
