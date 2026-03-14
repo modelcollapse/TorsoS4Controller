@@ -7,7 +7,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct SettingsTabView: View {
-    @EnvironmentObject var appState: AppState  // fixed placeholder
+    @EnvironmentObject var appState: AppState
 
     @State private var presets: [PresetInfo] = []
     @State private var showingExportDialog = false
@@ -68,15 +68,57 @@ struct SettingsTabView: View {
         .border(width: 1, edges: [.bottom], color: DesignSystem.Colors.border)
     }
 
-    // Sections placeholders
-    private var generalSection: some View { <truncated__content /> }
-    private var midiSection: some View { <truncated__content /> }
-    private var midiTestSection: some View { <truncated__content /> }
-    private var safetySection: some View { <truncated__content /> }
-    private var presetsSection: some View { <truncated__content /> }
-    private var diagnosticsSection: some View { <truncated__content /> }
-    private var infoSection: some View { <truncated__content /> }
+    // MARK: - Sections
+    private var generalSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("General Settings").font(.headline)
+            Text("Configure general options here.")
+        }.padding().background(DesignSystem.Colors.surface).cornerRadius(6)
+    }
 
+    private var safetySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Safety Settings").font(.headline)
+            Toggle("Enable Safety Mode", isOn: .constant(true))
+        }.padding().background(DesignSystem.Colors.surface).cornerRadius(6)
+    }
+
+    private var midiSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("MIDI Settings").font(.headline)
+            Text("Configure MIDI devices here.")
+        }.padding().background(DesignSystem.Colors.surface).cornerRadius(6)
+    }
+
+    private var midiTestSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("MIDI Test").font(.headline)
+            Text("Test MIDI signals here.")
+        }.padding().background(DesignSystem.Colors.surface).cornerRadius(6)
+    }
+
+    private var presetsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Presets").font(.headline)
+            Text("Manage presets here.")
+        }.padding().background(DesignSystem.Colors.surface).cornerRadius(6)
+    }
+
+    private var diagnosticsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Diagnostics").font(.headline)
+            Text("View diagnostics here.")
+        }.padding().background(DesignSystem.Colors.surface).cornerRadius(6)
+    }
+
+    private var infoSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("App Info").font(.headline)
+            Text("Version, credits, and more.")
+        }.padding().background(DesignSystem.Colors.surface).cornerRadius(6)
+    }
+
+    // MARK: - Helpers
     private func loadPresets() { presets = appState.listPresets() }
 }
 
@@ -88,6 +130,7 @@ enum SettingsSubTab: String, CaseIterable {
     case info = "Info"
 }
 
+// MARK: - Preview
 #Preview {
     SettingsTabView().environmentObject(AppState())
 }
