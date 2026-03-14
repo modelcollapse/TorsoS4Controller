@@ -5,7 +5,6 @@
 
 import SwiftUI
 
-// MARK: - Models
 struct Step: Identifiable {
     let id = UUID()
     var isActive: Bool = false
@@ -29,7 +28,6 @@ struct Lane: Identifiable {
     }
 }
 
-// MARK: - Sequencer View
 struct SequencerView: View {
     @EnvironmentObject var appState: AppState
 
@@ -37,10 +35,10 @@ struct SequencerView: View {
         GeometryReader { geo in
             let maxWidth = geo.size.width - 32
             VStack(spacing: 12) {
-                // Step Count Control
+                // Step count control with explicit binding
                 HStack {
                     Text("Steps:")
-                    let stepCountBinding: Binding<Int> = Binding(
+                    let stepCountBinding = Binding<Int>(
                         get: { appState.stepCount },
                         set: { appState.stepCount = $0 }
                     )
@@ -70,7 +68,6 @@ struct SequencerView: View {
     }
 }
 
-// MARK: - Sequencer Lane View
 struct SequencerLaneView: View {
     @Binding var lane: Lane
     let maxWidth: CGFloat
@@ -115,7 +112,6 @@ struct SequencerLaneView: View {
     }
 }
 
-// MARK: - Preview
 #Preview {
     SequencerView().environmentObject(AppState())
 }
