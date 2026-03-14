@@ -25,6 +25,7 @@ struct MacrosTabView: View {
 struct MacroCard: View {
     @EnvironmentObject var appState: AppState
     let macroIndex: Int
+    @State private var showDetails = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -39,16 +40,85 @@ struct MacroCard: View {
                 .foregroundColor(DesignSystem.Colors.textPrimary)
 
             if !(appState.macroAssignments[macroIndex] ?? []).isEmpty {
-                VStack(spacing: 4) {
+                VStack(spacing: 6) {
                     ForEach((appState.macroAssignments[macroIndex] ?? []).indices, id: \.self) { idx in
                         let assignment = (appState.macroAssignments[macroIndex] ?? [])[idx]
-                        Text(Constants.getParameter(assignment.paramID)?.name ?? "Unknown")
-                            .font(DesignSystem.Typography.labelFont)
-                            .foregroundColor(DesignSystem.Colors.textSecondary)
-                            .lineLimit(1)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(Constants.getParameter(assignment.paramID)?.name ?? "Unknown")
+                                    .font(DesignSystem.Typography.labelFont)
+                                    .foregroundColor(DesignSystem.Colors.textSecondary)
+                                    .lineLimit(1)
+                                Spacer()
+                                Text("[\(assignment.minScale)–\(assignment.maxScale)]")
+                                    .font(DesignSystem.Typography.labelFont)
+                                    .foregroundColor(DesignSystem.Colors.track1)
+                            }
+
+                            // Min/Max Range Slider
+                            HStack(spacing: 8) {
+                                Text("Min")
+                                    .font(DesignSystem.Typography.labelFont)
+                                    .foregroundColor(DesignSystem.Colors.textSecondary)
+                                    .frame(width: 24)
+
+                                Slider(
+                                    value: .init(
+                                        get: { Double(assignment.minScale) },
+                                        set: { newMin in
+                                            var assignments = appState.macroAssignments[macroIndex] ?? []
+                                            if idx < assignments.count {
+                                                assignments[idx].minScale = Int(newMin)
+                                                appState.macroAssignments[macroIndex] = assignments
+                                            }
+                                        }
+                                    ),
+                                    in: 0...127
+                                )
+
+                                Text("\(assignment.minScale)")
+                                    .font(DesignSystem.Typography.labelFont)
+                                    .foregroundColor(DesignSystem.Colors.textPrimary)
+                                    .frame(width: 28)
+                            }
+
+                            HStack(spacing: 8) {
+                                Text("Max")
+                                    .font(DesignSystem.Typography.labelFont)
+                                    .foregroundColor(DesignSystem.Colors.textSecondary)
+                                    .frame(width: 24)
+
+                                Slider(
+                                    value: .init(
+                                        get: { Double(assignment.maxScale) },
+                                        set: { newMax in
+                                            var assignments = appState.macroAssignments[macroIndex] ?? []
+                                            if idx < assignments.count {
+                                                assignments[idx].maxScale = Int(newMax)
+                                                appState.macroAssignments[macroIndex] = assignments
+                                            }
+                                        }
+                                    ),
+                                    in: 0...127
+                                )
+
+                                Text("\(assignment.maxScale)")
+                                    .font(DesignSystem.Typography.labelFont)
+                                    .foregroundColor(DesignSystem.Colors.textPrimary)
+                                    .frame(width: 28)
+                            }
+                        }
+                        .padding(6)
+                        .background(DesignSystem.Colors.surface)
+                        .cornerRadius(3)
                     }
                 }
                 .frame(maxWidth: .infinity)
+            } else {
+                Text("No targets assigned")
+                    .font(DesignSystem.Typography.labelFont)
+                    .foregroundColor(DesignSystem.Colors.textSecondary)
             }
         }
         .padding(12)

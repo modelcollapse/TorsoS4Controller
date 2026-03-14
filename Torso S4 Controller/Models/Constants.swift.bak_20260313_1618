@@ -4,21 +4,6 @@
 //
 //  App-wide constants and parameter definitions
 //
-//
-//  NAV UPDATE NOTE
-//  2026-03-13 16:18 local
-//
-//  User-facing navigation language has been updated to better match intent.
-//  Blocks = Components
-//  Mod = Modulate
-//  Mix = Sound
-//
-//  Important:
-//  This is currently a naming/navigation pass only.
-//  Existing internal view names like BlocksTabView may remain unchanged for now.
-//  A later pass can rename internal files/types after the new navigation language settles.
-//
-
 
 import Foundation
 

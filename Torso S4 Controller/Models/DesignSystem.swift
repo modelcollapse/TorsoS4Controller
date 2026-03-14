@@ -62,10 +62,36 @@ struct DesignSystem {
         // Font: Monospaced system font
         static let family = "Menlo" // or "Monaco" on macOS
 
-        static let labelFont = Font.system(.caption, design: .monospaced).weight(.medium)        // 10px
-        static let smallFont = Font.system(.caption2, design: .monospaced).weight(.semibold)    // 11px
-        static let regularFont = Font.system(.body, design: .monospaced).weight(.semibold)      // 12px
-        static let largeFont = Font.system(.headline, design: .monospaced).weight(.bold)        // 13px
+        // Simplified to 4 standard sizes with clear semantic meaning
+        static let display = Font.system(size: 16, weight: .bold, design: .monospaced)      // Display/Logo (16px)
+        static let title = Font.system(size: 13, weight: .bold, design: .monospaced)        // Section Title (13px)
+        static let body = Font.system(size: 11, weight: .semibold, design: .monospaced)     // Body/Control (11px)
+        static let label = Font.system(size: 10, weight: .regular, design: .monospaced)     // Label/Meta (10px)
+        static let small = Font.system(size: 9, weight: .regular, design: .monospaced)      // Helper text (9px)
+
+        // Legacy aliases (deprecated, use new names above)
+        @available(*, deprecated, message: "Use Typography.body instead")
+        static let labelFont = Font.system(.caption, design: .monospaced).weight(.medium)
+
+        @available(*, deprecated, message: "Use Typography.small instead")
+        static let smallFont = Font.system(.caption2, design: .monospaced).weight(.semibold)
+
+        @available(*, deprecated, message: "Use Typography.body instead")
+        static let regularFont = Font.system(.body, design: .monospaced).weight(.semibold)
+
+        @available(*, deprecated, message: "Use Typography.title instead")
+        static let largeFont = Font.system(.headline, design: .monospaced).weight(.bold)
+    }
+
+    // MARK: - Spacing (4px increments for consistency)
+
+    struct Spacing {
+        static let xs: CGFloat = 4        // Extra small spacing (internal)
+        static let sm: CGFloat = 8        // Small spacing (default between elements)
+        static let md: CGFloat = 12       // Medium spacing (section separation)
+        static let lg: CGFloat = 16       // Large spacing (major sections)
+        static let xl: CGFloat = 20       // Extra large spacing
+        static let xxl: CGFloat = 24      // 2x Large spacing
     }
 
     // MARK: - Dimensions
@@ -74,8 +100,8 @@ struct DesignSystem {
         // Layout
         static let headerHeight: CGFloat = 92
         static let tabHeight: CGFloat = 32
-        static let contentPadding: CGFloat = 16
-        static let spacing: CGFloat = 4
+        static let contentPadding: CGFloat = Spacing.md           // 12px padding around content
+        static let spacing: CGFloat = Spacing.sm                  // 8px default spacing
 
         // Components
         static let knobSize: CGFloat = 56

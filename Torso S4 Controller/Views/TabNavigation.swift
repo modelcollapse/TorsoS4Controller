@@ -2,7 +2,7 @@
 //  TabNavigation.swift
 //  Torso S4 Controller
 //
-//  Tab selection bar with 9 tabs
+//  Tab selection bar with app navigation labels
 //
 
 import SwiftUI
@@ -11,14 +11,15 @@ struct TabNavigation: View {
     @EnvironmentObject var appState: AppState
 
     let tabs: [(TabSelection, String)] = [
-        (.control, "Control"),
-        (.sequencer, "Sequencer"),
-        (.lfos, "LFOs"),
-        (.knobs, "Knobs"),
+        (.control, "Tracks"),
+        (.sequencer, "Compose"),
+        (.lfos, "Modulate"),
         (.macros, "Macros"),
-        (.xypad, "XY Pad"),
+        (.blocks, "Components"),
         (.song, "Song"),
-        (.field, "Field"),
+        (.field, "Spatial"),
+        (.xypad, "XY Pad"),
+        (.knobs, "Knob Record"),
         (.settings, "Settings"),
     ]
 
