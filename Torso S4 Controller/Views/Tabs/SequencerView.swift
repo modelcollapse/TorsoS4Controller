@@ -37,58 +37,34 @@ struct SequencerView: View {
         GeometryReader { geo in
             let maxWidth = geo.size.width - 32
             VStack(spacing: 12) {
-                stepCountControl
+                // Step Count Control
+                HStack {
+                    Text("Steps:")
+                    TextField("Number of steps", value: Binding(
+                        get: { appState.stepCount },
+                        set: { appState.stepCount = $0 }
+                    ), formatter: NumberFormatter())
+                    .frame(width: 60)
+                    .textFieldStyle(.roundedBorder)
+                    Button("+") { appState.stepCount += 1 }
+                    Button("-") { appState.stepCount = max(1, appState.stepCount - 1) }
+                    Spacer()
+                }
+                .padding(.horizontal)
 
+                // Lanes
                 ForEach(appState.lanes.indices, id: \.self) { laneIndex in
                     let laneBinding = Binding<Lane>(
                         get: { appState.lanes[laneIndex] },
                         set: { appState.lanes[laneIndex] = $0 }
                     )
-                    let laneID = appState.lanes[laneIndex].id
-                    laneView(lane: laneBinding, maxWidth: maxWidth)
+                    SequencerLaneView(lane: laneBinding, maxWidth: maxWidth)
                 }
             }
             .padding(.vertical)
         }
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { _ in
             appState.transportTick()
-        }
-    }
-
-    private var stepCountControl: some View {
-        HStack {
-            Text("Steps:")
-            TextField("Number of steps", value: Binding<Int>(
-                get: { appState.stepCount },
-                set: { appState.stepCount = $0 }
-            ), formatter: NumberFormatter())
-            .frame(width: 60)
-            .textFieldStyle(.roundedBorder)
-            Button("+") { appState.stepCount += 1 }
-            Button("-") { appState.stepCount = max(1, appState.stepCount - 1) }
-            Spacer()
-        }
-        .padding(.horizontal)
-    }
-
-    private func laneView(lane: Binding<Lane>, maxWidth: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            SequencerLaneView(lane: lane, maxWidth: maxWidth)
-            HStack(spacing: 8) {
-                Menu("Copy →") {
-                    ForEach(appState.lanes.indices.filter { appState.lanes[$0].id != lane.wrappedValue.id }, id: \.self) { target in
-                        Button("Lane \(target + 1)") { appState.copyLane(from: appState.lanes.firstIndex(where: { $0.id == lane.wrappedValue.id })!, to: target) }
-                    }
-                }
-                Menu("Mirror →") {
-                    ForEach(appState.lanes.indices.filter { appState.lanes[$0].id != lane.wrappedValue.id }, id: \.self) { target in
-                        Button("Lane \(target + 1)") { appState.mirrorLane(from: appState.lanes.firstIndex(where: { $0.id == lane.wrappedValue.id })!, to: target) }
-                    }
-                }
-                Spacer()
-            }
-            .font(.caption)
-            .padding(.horizontal)
         }
     }
 }
@@ -103,25 +79,29 @@ struct SequencerLaneView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: true) {
             HStack(spacing: 2) {
-                ForEach($lane.steps) { $step in
+                ForEach(lane.steps.indices, id: \.self) { stepIndex in
+                    let stepBinding = Binding<Step>(
+                        get: { lane.steps[stepIndex] },
+                        set: { lane.steps[stepIndex] = $0 }
+                    )
                     Rectangle()
-                        .fill(step.isPlaying ? Color.yellow : (step.isActive ? Color.green : Color.gray))
+                        .fill(stepBinding.wrappedValue.isPlaying ? Color.yellow : (stepBinding.wrappedValue.isActive ? Color.green : Color.gray))
                         .frame(width: stepWidth, height: 24)
                         .cornerRadius(2)
                         .gesture(
                             DragGesture(minimumDistance: 0)
                                 .onChanged { _ in
                                     if !isDragging {
-                                        paintState = !step.isActive
+                                        paintState = !stepBinding.wrappedValue.isActive
                                         isDragging = true
                                     }
-                                    step.isActive = paintState
+                                    stepBinding.wrappedValue.isActive = paintState
                                 }
                                 .onEnded { _ in
                                     isDragging = false
                                 }
                         )
-                        .onTapGesture { step.isActive.toggle() }
+                        .onTapGesture { stepBinding.wrappedValue.isActive.toggle() }
                 }
             }
             .padding(.horizontal, 4)
