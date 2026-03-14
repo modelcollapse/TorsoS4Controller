@@ -1,9 +1,11 @@
-cd ~/Music/"Torso S4 Controller"
+//
+//  SequencerView.swift
+//  Torso S4 Controller
+//
 
-# Replace SequencerView.swift completely
-cat > Torso\ S4\ Controller/Views/Tabs/SequencerView.swift << 'EOF'
 import SwiftUI
 
+// MARK: - Models
 struct Step: Identifiable {
     let id = UUID()
     var isActive: Bool = false
@@ -13,11 +15,11 @@ struct Step: Identifiable {
 struct Lane: Identifiable {
     let id = UUID()
     var steps: [Step]
-    
+
     init(stepCount: Int = 16) {
         steps = Array(repeating: Step(), count: stepCount)
     }
-    
+
     mutating func updateStepCount(_ newCount: Int) {
         if newCount > steps.count {
             steps.append(contentsOf: Array(repeating: Step(), count: newCount - steps.count))
@@ -27,41 +29,59 @@ struct Lane: Identifiable {
     }
 }
 
-class AppState: ObservableObject {
-    @Published var lanes: [Lane] = Array(repeating: Lane(), count: 4)
-    @Published var stepCount: Int = 16 {
-        didSet { updateStepCountForAllLanes() }
-    }
-    @Published var currentStep: Int = 0
+// MARK: - Sequencer View
+struct SequencerView: View {
+    @EnvironmentObject var appState: AppState
 
-    func updateStepCountForAllLanes() {
-        for index in lanes.indices {
-            lanes[index].updateStepCount(stepCount)
-        }
-    }
-
-    func transportTick() {
-        currentStep = (currentStep + 1) % stepCount
-        for laneIndex in lanes.indices {
-            for stepIndex in lanes[laneIndex].steps.indices {
-                lanes[laneIndex].steps[stepIndex].isPlaying = (stepIndex == currentStep)
+    var body: some View {
+        VStack(spacing: 12) {
+            stepCountControl
+            ForEach($appState.lanes.indices, id: \.self) { laneIndex in
+                laneView(laneIndex: laneIndex)
             }
         }
-    }
-    
-    func copyLane(from sourceIndex: Int, to targetIndex: Int) {
-        guard lanes.indices.contains(sourceIndex), lanes.indices.contains(targetIndex) else { return }
-        lanes[targetIndex].steps = lanes[sourceIndex].steps
+        .padding(.vertical)
+        .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { _ in
+            appState.transportTick()
+        }
     }
 
-    func mirrorLane(from sourceIndex: Int, to targetIndex: Int) {
-        guard lanes.indices.contains(sourceIndex), lanes.indices.contains(targetIndex) else { return }
-        lanes[targetIndex].steps = lanes[sourceIndex].steps.map { step in
-            Step(isActive: !step.isActive, isPlaying: step.isPlaying)
+    private var stepCountControl: some View {
+        HStack {
+            Text("Steps:")
+            TextField("Number of steps", value: $appState.stepCount, formatter: NumberFormatter())
+                .frame(width: 60)
+                .textFieldStyle(.roundedBorder)
+            Button("+") { appState.stepCount += 1 }
+            Button("-") { appState.stepCount = max(1, appState.stepCount - 1) }
+            Spacer()
+        }
+        .padding(.horizontal)
+    }
+
+    private func laneView(laneIndex: Int) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            SequencerLaneView(lane: $appState.lanes[laneIndex])
+            HStack(spacing: 8) {
+                Menu("Copy →") {
+                    ForEach(appState.lanes.indices.filter { $0 != laneIndex }, id: \.self) { target in
+                        Button("Lane \(target + 1)") { appState.copyLane(from: laneIndex, to: target) }
+                    }
+                }
+                Menu("Mirror →") {
+                    ForEach(appState.lanes.indices.filter { $0 != laneIndex }, id: \.self) { target in
+                        Button("Lane \(target + 1)") { appState.mirrorLane(from: laneIndex, to: target) }
+                    }
+                }
+                Spacer()
+            }
+            .font(.caption)
+            .padding(.horizontal)
         }
     }
 }
 
+// MARK: - Sequencer Lane View
 struct SequencerLaneView: View {
     @Binding var lane: Lane
     @State private var isDragging = false
@@ -101,49 +121,3 @@ struct SequencerLaneView: View {
         return max((maxWidth - totalSpacing) / CGFloat(lane.steps.count), 20)
     }
 }
-
-struct SequencerView: View {
-    @EnvironmentObject var appState: AppState
-
-    var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Steps:")
-                TextField("Number of steps", value: $appState.stepCount, formatter: NumberFormatter())
-                    .frame(width: 60)
-                    .textFieldStyle(.roundedBorder)
-                Button("+") { appState.stepCount += 1 }
-                Button("-") { appState.stepCount = max(1, appState.stepCount - 1) }
-            }
-            .padding(.horizontal)
-
-            ForEach($appState.lanes.indices, id: \.self) { laneIndex in
-                VStack(alignment: .leading, spacing: 4) {
-                    SequencerLaneView(lane: $appState.lanes[laneIndex])
-
-                    HStack(spacing: 8) {
-                        Menu("Copy →") {
-                            ForEach(appState.lanes.indices.filter { $0 != laneIndex }, id: \.self) { target in
-                                Button("Lane \(target + 1)") { appState.copyLane(from: laneIndex, to: target) }
-                            }
-                        }
-                        Menu("Mirror →") {
-                            ForEach(appState.lanes.indices.filter { $0 != laneIndex }, id: \.self) { target in
-                                Button("Lane \(target + 1)") { appState.mirrorLane(from: laneIndex, to: target) }
-                            }
-                        }
-                        Spacer()
-                    }
-                    .font(.caption)
-                }
-                .padding(.horizontal)
-            }
-        }
-        .padding(.vertical)
-        .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { _ in
-            appState.transportTick()
-        }
-    }
-}
-EOF
-
