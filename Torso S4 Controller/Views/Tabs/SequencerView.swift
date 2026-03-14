@@ -40,14 +40,15 @@ struct SequencerView: View {
                 // Step Count Control
                 HStack {
                     Text("Steps:")
-                    TextField("Number of steps", value: Binding(
+                    let stepCountBinding = Binding(
                         get: { appState.stepCount },
                         set: { appState.stepCount = $0 }
-                    ), formatter: NumberFormatter())
-                    .frame(width: 60)
-                    .textFieldStyle(.roundedBorder)
-                    Button("+") { appState.stepCount += 1 }
-                    Button("-") { appState.stepCount = max(1, appState.stepCount - 1) }
+                    )
+                    TextField("Number of steps", value: stepCountBinding, formatter: NumberFormatter())
+                        .frame(width: 60)
+                        .textFieldStyle(.roundedBorder)
+                    Button("+") { stepCountBinding.wrappedValue += 1 }
+                    Button("-") { stepCountBinding.wrappedValue = max(1, stepCountBinding.wrappedValue - 1) }
                     Spacer()
                 }
                 .padding(.horizontal)
