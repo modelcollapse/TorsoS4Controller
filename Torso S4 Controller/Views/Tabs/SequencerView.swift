@@ -40,7 +40,7 @@ struct SequencerView: View {
                 // Step Count Control
                 HStack {
                     Text("Steps:")
-                    let stepCountBinding = Binding(
+                    let stepCountBinding: Binding<Int> = Binding(
                         get: { appState.stepCount },
                         set: { appState.stepCount = $0 }
                     )
