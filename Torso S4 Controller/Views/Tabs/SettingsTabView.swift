@@ -7,7 +7,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct SettingsTabView: View {
-    @EnvironmentObject var appState: AppState  // fixed
+    @EnvironmentObject var appState: AppState  // fixed placeholder
 
     @State private var presets: [PresetInfo] = []
     @State private var showingExportDialog = false
@@ -26,17 +26,13 @@ struct SettingsTabView: View {
                     case .general:
                         generalSection
                         safetySection
-
                     case .midi:
                         midiSection
                         midiTestSection
-
                     case .presets:
                         presetsSection
-
                     case .diagnostics:
                         diagnosticsSection
-
                     case .info:
                         infoSection
                     }
@@ -46,60 +42,20 @@ struct SettingsTabView: View {
         }
         .background(DesignSystem.Colors.background)
         .onAppear { loadPresets() }
-        .alert("Export Preset", isPresented: $showingExportDialog) {
-            TextField("Preset name", text: $exportName)
-            Button("Export") {
-                let trimmed = exportName.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmed.isEmpty {
-                    _ = appState.exportPreset(name: trimmed)
-                    exportName = ""
-                    loadPresets()
-                }
-            }
-            Button("Cancel", role: .cancel) { }
-        }
-        .fileImporter(
-            isPresented: $showingImportFile,
-            allowedContentTypes: [UTType(filenameExtension: "s4")!],
-            onCompletion: { result in
-                switch result {
-                case .success(let url):
-                    _ = appState.importPreset(from: url)
-                    loadPresets()
-                case .failure:
-                    break
-                }
-            }
-        )
-        .alert("Clear All Presets?", isPresented: $showingConfirmClear) {
-            Button("Clear", role: .destructive) {
-                appState.clearAllPresets()
-                loadPresets()
-            }
-            Button("Cancel", role: .cancel) { }
-        }
     }
 
-    // MARK: - SubTab Bar
     private var settingsSubTabBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(SettingsSubTab.allCases, id: \.self) { tab in
+                    let isSelected = selectedSettingsTab == tab
                     Button(action: { selectedSettingsTab = tab }) {
                         Text(tab.rawValue)
                             .font(DesignSystem.Typography.small)
-                            .foregroundColor(
-                                selectedSettingsTab == tab
-                                ? DesignSystem.Colors.textPrimary
-                                : DesignSystem.Colors.textSecondary
-                            )
+                            .foregroundColor(isSelected ? DesignSystem.Colors.textPrimary : DesignSystem.Colors.textSecondary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(
-                                selectedSettingsTab == tab
-                                ? DesignSystem.Colors.surface
-                                : DesignSystem.Colors.surfaceRaised
-                            )
+                            .background(isSelected ? DesignSystem.Colors.surface : DesignSystem.Colors.surfaceRaised)
                             .cornerRadius(4)
                     }
                     .buttonStyle(.plain)
@@ -112,7 +68,7 @@ struct SettingsTabView: View {
         .border(width: 1, edges: [.bottom], color: DesignSystem.Colors.border)
     }
 
-    // MARK: - Sections
+    // Sections placeholders
     private var generalSection: some View { <truncated__content /> }
     private var midiSection: some View { <truncated__content /> }
     private var midiTestSection: some View { <truncated__content /> }
@@ -121,10 +77,7 @@ struct SettingsTabView: View {
     private var diagnosticsSection: some View { <truncated__content /> }
     private var infoSection: some View { <truncated__content /> }
 
-    // MARK: - Helpers
-    private func refreshMIDIDevices() { <truncated__content /> }
     private func loadPresets() { presets = appState.listPresets() }
-    private func boolText(_ value: Bool) -> String { value ? "On" : "Off" }
 }
 
 enum SettingsSubTab: String, CaseIterable {

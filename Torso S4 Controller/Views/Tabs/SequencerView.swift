@@ -34,13 +34,16 @@ struct SequencerView: View {
     @EnvironmentObject var appState: AppState
 
     var body: some View {
-        VStack(spacing: 12) {
-            stepCountControl
-            ForEach($appState.lanes.indices, id: \.self) { laneIndex in
-                laneView(laneIndex: laneIndex)
+        GeometryReader { geo in
+            let maxWidth = geo.size.width - 32
+            VStack(spacing: 12) {
+                stepCountControl
+                ForEach(appState.lanes.indices, id: \.self) { laneIndex in
+                    laneView(laneIndex: laneIndex, maxWidth: maxWidth)
+                }
             }
+            .padding(.vertical)
         }
-        .padding(.vertical)
         .onReceive(Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()) { _ in
             appState.transportTick()
         }
@@ -59,9 +62,9 @@ struct SequencerView: View {
         .padding(.horizontal)
     }
 
-    private func laneView(laneIndex: Int) -> some View {
+    private func laneView(laneIndex: Int, maxWidth: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            SequencerLaneView(lane: $appState.lanes[laneIndex])
+            SequencerLaneView(lane: $appState.lanes[laneIndex], maxWidth: maxWidth)
             HStack(spacing: 8) {
                 Menu("Copy →") {
                     ForEach(appState.lanes.indices.filter { $0 != laneIndex }, id: \.self) { target in
@@ -84,6 +87,7 @@ struct SequencerView: View {
 // MARK: - Sequencer Lane View
 struct SequencerLaneView: View {
     @Binding var lane: Lane
+    let maxWidth: CGFloat
     @State private var isDragging = false
     @State private var paintState: Bool = false
 
@@ -117,7 +121,11 @@ struct SequencerLaneView: View {
 
     private var stepWidth: CGFloat {
         let totalSpacing = CGFloat(max(0, lane.steps.count - 1)) * 2
-        let maxWidth = UIScreen.main.bounds.width - 32
         return max((maxWidth - totalSpacing) / CGFloat(lane.steps.count), 20)
     }
+}
+
+// MARK: - Preview
+#Preview {
+    SequencerView().environmentObject(AppState())
 }
